@@ -115,7 +115,7 @@ def clear_seed_data():
 
 def write_execs():
     global processed_records
-    with open(EXECS_COUNT_FILE, 'wb') as f:
+    with open(EXECS_COUNT_FILE, 'w') as f:
         f.write(str(processed_records))
 
 # ---
