@@ -171,7 +171,7 @@ def sync_from_record():
     for file in glob.glob(RECORD_FOLDER + '/*'):
         with open(file, 'r') as f:
             # parse record
-            tmp = f.read.split('\n')
+            tmp = f.read().split('\n')
             seq = tmp[0].split('$$$')
             seed = tmp[1]
             add_state_sequence((seq, seed), db_graph, db_hit_count, db_state_seq)
