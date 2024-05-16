@@ -109,7 +109,6 @@ def clear_seed_data():
     if os.path.exists(SEED_FOLDER):
         shutil.rmtree(SEED_FOLDER)
     os.mkdir(SEED_FOLDER)
-    open(os.path.join(SEED_FOLDER, '.gitkeep'), 'a').close()
 
 # ---
 
