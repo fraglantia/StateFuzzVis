@@ -13,5 +13,13 @@ int main() {
     4,
     "example_seed"
   );
+
+  int states[5] = {200,212,214,300,200};
+  write_statefuzzvis_record_int(
+    "record_fname_int",
+    states,
+    5,
+    "example_seed"
+  );
   return 0;
 }

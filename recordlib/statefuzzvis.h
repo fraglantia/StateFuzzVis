@@ -108,4 +108,13 @@ void write_statefuzzvis_record(char* fname, char** states, int state_count, char
     fclose(file);
 }
 
+void write_statefuzzvis_record_int(char* fname, int* states, int state_count, char* seed_buf) {
+    char** char_states = (char**) malloc(sizeof(char*) * state_count);
+	for (int i=0; i<state_count;i++) {
+		char_states[i] = (char*) malloc(16);
+		snprintf(char_states[i], 16, "%d", states[i]);
+	}
+	write_statefuzzvis_record(fname, char_states, state_count, seed_buf);
+}
+
 #endif
