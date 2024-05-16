@@ -88,10 +88,15 @@ function setTitle(node) {
   }
 }
 
-// function setStats(node) {
-//   d3.select("#info-exec-count")
-//     .text(`#Execs: ${}`);
-// }
+function setNumExecs(numExecs) {
+  d3.select("#info-exec-count")
+    .text(`#Execs: ${numExecs}`);
+}
+
+function setNumStates(numStates) {
+  d3.select("#info-states-count")
+    .text(`#States: ${numStates}`);
+}
 
 function clearContents() {
   return d3.select("#js-infobox-content").html("");
@@ -331,6 +336,7 @@ function loadJson() {
       const simulation = d3.forceSimulation();
       const g = canvas.append("g");
       const d = parseJSONData(json);
+      setNumStates(json.length);
       const links = drawEdges(g, d);
       const nodes = drawNodes(g, d, simulation);
       const zoom = installZoomHandler(height, canvas, g, d);
@@ -357,5 +363,12 @@ function loadJson() {
 }
 
 function loadExecs() {
-  d3.json("data/execsCount.txt")
+  d3.text("data/execs_count.txt")
+    .then(function(txt) {
+      setNumExecs(txt);
+    })
 }
+
+
+loadJson();
+loadExecs();

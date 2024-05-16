@@ -113,6 +113,13 @@ def clear_seed_data():
 
 # ---
 
+def write_execs():
+    global processed_records
+    with open(EXECS_COUNT_FILE, 'wb') as f:
+        f.write(str(processed_records))
+
+# ---
+
 def clear_record_data():
     if os.path.exists(RECORD_FOLDER):
         shutil.rmtree(RECORD_FOLDER)
@@ -123,6 +130,7 @@ def reset_dbs():
     init_empty_state_seq_seed_db()
     clear_seed_data()
     clear_record_data()
+    write_execs()
 
 
 """
@@ -159,6 +167,7 @@ def add_state_sequence(inp_tuple, db_graph, db_hit_count, db_state_seq):
         write_seed(seed, fname)
         db_state_seq[state_seq_key].append(fname)
     processed_records += 1
+    write_execs()
 
 def sync_from_record():
     """
