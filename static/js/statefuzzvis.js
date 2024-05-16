@@ -1,7 +1,7 @@
 "use strict";
 
 // The minimum scale that we can set.
-const minScale = 0.8;
+const minScale = 0.2;
 var minHitCount = 1;
 var maxHitCount = 2;
 
@@ -171,9 +171,9 @@ function drawNodes(g, d, simulation) {
 }
 
 function installZoomHandler(height, canvas, g, d) {
-  const maxX = 100;
-  const maxY = 100;
-  const marginY = 100 / 2 / minScale;
+  const maxX = 100000;
+  const maxY = 200;
+  const marginY = height / 2 / minScale;
   const zoomHandler =
     d3.zoom()
       .scaleExtent([minScale, 5])
