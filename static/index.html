@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- LOCAL USE ONLY! -->
+    <meta http-equiv="cache-control" content="no-cache"> 
+    <meta http-equiv="refresh" content="600">
+    <title>States</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/statefuzzvis.css" />
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">States</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbar-collapse"
+                aria-controls="navbar-collapse"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </nav>
+    </header>
+
+    <main role="main" class="main">
+      <div class="canvas" id="js-canvas"></div>
+      <div class="separator" id="js-separator"></div>
+      <div class="infobox" id="js-infobox">
+        <div class="infobox__header" id="js-infobox-header">
+          <h4 id="js-infobox-title">Select a state</h4>
+        </div>
+        <div id="js-infobox-content"></div>
+        <div class="infobox__close">
+          <button id="js-infobox-close">Close</button>
+        </div>
+      </div>
+    </main>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/d3.min.js"></script>
+    <script src="js/statefuzzvis.js"></script>
+  </body>
+</html>
