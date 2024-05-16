@@ -126,19 +126,13 @@ def reset_dbs():
 
 """
 form:
-{
-    'state_sequence': ['202', '200', '203'],
-    'seed': 'Q5YACgAAA...'
-}
+(['202', '200', '203'], 'Q5YACgAAA...')
 represents 202 -> 200 -> 203
 and the seed that represents it is 'seed'
 """
-def add_state_sequence(input_json, db_graph, db_hit_count, db_state_seq):
+def add_state_sequence(inp_tuple, db_graph, db_hit_count, db_state_seq):
     
-    content = input_json
-
-    # get state sequence in the form of list of state names
-    state_sequence = content['state_sequence']
+    state_sequence, b64seed = inp_tuple
 
     # generate graph
     for i in range(len(state_sequence)-1):
@@ -156,7 +150,7 @@ def add_state_sequence(input_json, db_graph, db_hit_count, db_state_seq):
         db_state_seq[state_seq_key] = []
     if len(db_state_seq[state_seq_key]) < PER_STATE_SEQ_SEED_LIMIT:
         # get seed in the form of b64 string
-        seed = base64.b64decode(content['seed'])
+        seed = base64.b64decode(b64seed)
         # generate random filename
         fname = uuid.uuid4().hex
         fname = os.path.join(SEED_FOLDER, fname)
@@ -166,14 +160,21 @@ def add_state_sequence(input_json, db_graph, db_hit_count, db_state_seq):
     
 
 def sync_from_record():
-    
+    """
+    record format:
+    state1$$$state2$$$state3
+    YW5ueWVvbmdoYXNleW9taWNjaHk=
+    """
     db_graph, db_hit_count = get_state_graph_db_as_graph()
     db_state_seq = get_state_seq_seed_db()
     
     for file in glob.glob(RECORD_FOLDER + '/*'):
         with open(file, 'r') as f:
-            record = json.load(f)
-            add_state_sequence(record, db_graph, db_hit_count, db_state_seq)
+            # parse record
+            tmp = f.read.split('\n')
+            seq = tmp[0].split('$$$')
+            seed = tmp[1]
+            add_state_sequence((seq, seed), db_graph, db_hit_count, db_state_seq)
         os.remove(file)
 
     flush_state_graph_db_from_graph(db_graph, db_hit_count)
