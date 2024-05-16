@@ -196,6 +196,6 @@ if __name__ == '__main__':
     atexit.register(lambda: sched.shutdown(wait=False))
 
     reset_dbs()
-    app.run()
+    app.run("0.0.0.0", 6789)
 
 
