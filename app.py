@@ -13,6 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
 app = Flask(__name__)
+processed_records = 0
 
 RECORD_FOLDER = 'static/data/records'
 
@@ -130,8 +131,8 @@ form:
 represents 202 -> 200 -> 203
 and the seed that represents it is 'seed'
 """
-def add_state_sequence(inp_tuple, db_graph, db_hit_count, db_state_seq):
-    
+def add_state_sequence(inp_tuple, db_graph, db_hit_count, db_state_seq):    
+    global processed_records
     state_sequence, b64seed = inp_tuple
 
     # generate graph
@@ -157,7 +158,7 @@ def add_state_sequence(inp_tuple, db_graph, db_hit_count, db_state_seq):
         # upload seed
         write_seed(seed, fname)
         db_state_seq[state_seq_key].append(fname)
-    
+    processed_records += 1
 
 def sync_from_record():
     """
@@ -181,8 +182,10 @@ def sync_from_record():
     flush_state_seq_seed_db(db_state_seq)
 
 def cronjob():
+    global processed_records
     print('Updating DBs...')
     print(time.strftime("%A, %d. %B %Y %I:%M:%S %p"))
+    print('Processed records:', processed_records)
     sync_from_record()
 
 @app.route('/<path:path>')
