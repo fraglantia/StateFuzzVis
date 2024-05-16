@@ -13,6 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
 app = Flask(__name__)
+EXECS_COUNT_FILE = 'static/data/execs_count.txt'
 
 RECORD_FOLDER = 'static/data/records'
 
@@ -54,8 +55,6 @@ SEED_FOLDER = 'static/data/seeds'
 """
 Folder containing seeds (in binary form)
 """
-
-
 
 def get_state_graph_db_as_graph():
     with open(STATE_GRAPH_FILE, 'r') as f:

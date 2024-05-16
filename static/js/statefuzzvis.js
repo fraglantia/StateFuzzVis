@@ -88,6 +88,11 @@ function setTitle(node) {
   }
 }
 
+// function setStats(node) {
+//   d3.select("#info-exec-count")
+//     .text(`#Execs: ${}`);
+// }
+
 function clearContents() {
   return d3.select("#js-infobox-content").html("");
 }
@@ -351,4 +356,6 @@ function loadJson() {
     });
 }
 
-loadJson();
+function loadExecs() {
+  d3.json("data/execsCount.txt")
+}
