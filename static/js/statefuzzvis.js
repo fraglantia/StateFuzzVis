@@ -5,6 +5,11 @@ const minScale = 0.8;
 var minHitCount = 1;
 var maxHitCount = 2;
 
+var stateSeqPtr = 0;
+
+var stateSeqJson = undefined;
+const stateToStateSeqStrings = {};
+
 // The currently selected node's name.
 var currentSelection = undefined;
 
@@ -85,6 +90,18 @@ function parseJSONData(arr) {
   return data;
 }
 
+function parseJSONDataStateSeqSeed() {
+  if (stateSeqJson === undefined) return;
+  $.each(stateSeqJson, function (stateSeqString, _) {
+    const stateSeqArr = stateSeqString.split("$$$");
+    $.each(stateSeqArr, function(_, stateName) {
+      if (stateToStateSeqStrings[stateName] === undefined)
+        stateToStateSeqStrings[stateName] = []
+      stateToStateSeqStrings[stateName].push(stateSeqString);
+    });
+  });
+}
+
 function drawEdges(g, d) {
   return g.append("g")
     .attr('stroke', '#666666')
@@ -100,7 +117,63 @@ function drawEdges(g, d) {
 function appendStateInfo(list, node) {
   list.append("li")
     .classed("list-group-item", true)
-    .text("Hit Count: " + node.hitCount);
+    .text("Hit count: " + node.hitCount);
+}
+
+function constructIcon(faName, title) {
+  return "<i class=\"fa " + faName + "\" title = \"" + title + "\"></i> ";
+}
+
+function nextPage(item, list, node) {
+  stateSeqPtr = Math.min(stateSeqPtr+10, stateToStateSeqStrings[node.name].length);
+  item.remove();
+  appendStateSeqSeedInfo(list, node);
+}
+
+function prevPage(item, list, node) {
+  stateSeqPtr = Math.max(stateSeqPtr-10, 0);
+  item.remove();
+  appendStateSeqSeedInfo(list, node);
+}
+
+function appendStateSeqSeedInfo(list, node) {
+  const item = list.append("li")
+    .classed("list-group-item", true);
+  const end = Math.min(stateSeqPtr+10, stateToStateSeqStrings[node.name].length);
+  
+  
+  const buttonDiv = item.append("div")
+  buttonDiv
+    .append("button")
+    .classed("btn btn-light btn-sm", true)
+    .html(constructIcon("fa-arrow-left", "Prev"))
+    .on("click", () => prevPage(item, list, node));
+  buttonDiv
+    .append("button")
+    .classed("btn btn-light btn-sm", true)
+    .html(constructIcon("fa-arrow-right", "Next"))
+    .on("click", () => nextPage(item, list, node));
+  
+  item.append("div").text(`State sequences (${stateSeqPtr}-${end}/${stateToStateSeqStrings[node.name].length}): `);
+  
+  const stateSeqStrs = stateToStateSeqStrings[node.name].slice(stateSeqPtr, end);
+  const stateSeqList = item.append("ul");
+  $.each(stateSeqStrs, function (_, stateSeqStr) {
+    const stateSeqArr = 
+      stateSeqStr
+        .split("$$$")
+        .map(function (stateName) {
+          if (stateName === node.name) {
+            return `<b><u>${stateName}</u></b>`;
+          }
+          return stateName;
+        });
+    stateSeqList
+      .append("li")
+      .append("a")
+      .attr("href", '/stateSeq/' + stateSeqStr)
+      .html(stateSeqArr.join(" → "));
+  });
 }
 
 function setTitle(node) {
@@ -139,6 +212,8 @@ function onClick(node) {
   if (currentSelection !== node.name) {
     let list = clearContents().append("ul").classed("list-group", true);
     appendStateInfo(list, node);
+    stateSeqPtr = 0;
+    appendStateSeqSeedInfo(list, node);
     setTitle(node);
     currentSelection = node.name;
     showInfobox();
@@ -367,37 +442,45 @@ function getQueryVariable(variable) {
 function loadJson() {
   d3.json("data/states.json")
     .then(function (json) {
-      const width = $("#js-canvas").width();
-      const height = $("#js-canvas").height();
-      deleteCanvas();
-      const canvas = createCanvas(width, height);
-      createDirectedEdges(canvas);
-      const simulation = d3.forceSimulation();
-      const g = canvas.append("g");
-      const d = parseJSONData(json);
-      setNumStates(json.length);
-      const links = drawEdges(g, d);
-      const nodes = drawNodes(g, d, simulation);
-      const zoom = installZoomHandler(height, canvas, g, d);
-      installClickHandler(nodes, links);
-      installDragHandler();
-      installInfoBoxCloseHandler();
-      initSimulation(d, simulation, width, height, links, nodes);
-      zoom.scaleTo(canvas, minScale);
-      // Center the graph after a sec.
-      setTimeout(function () {
-        const key = getQueryVariable("k");
-        const data = d.nodes.find(function (d) { return (d.name === key); });
-        if (key === undefined || data === undefined) {
-          const graphScale = d3.zoomTransform(g.node()).k;
-          const y = height / 2 / graphScale;
-          zoom.translateTo(canvas, 0, y);
-        } else {
-          setTimeout(function () {
-            showState(data, nodes, links, zoom, canvas, width, height);
-          }, 1000);
-        }
-      }, 500);
+      
+      d3.json("data/state_seq_seed.json")
+      .then(function (_stateSeqJson) {
+        stateSeqJson = _stateSeqJson;
+        parseJSONDataStateSeqSeed();
+        console.log("loading done!");
+        
+        const width = $("#js-canvas").width();
+        const height = $("#js-canvas").height();
+        deleteCanvas();
+        const canvas = createCanvas(width, height);
+        createDirectedEdges(canvas);
+        const simulation = d3.forceSimulation();
+        const g = canvas.append("g");
+        const d = parseJSONData(json);
+        setNumStates(json.length);
+        const links = drawEdges(g, d);
+        const nodes = drawNodes(g, d, simulation);
+        const zoom = installZoomHandler(height, canvas, g, d);
+        installClickHandler(nodes, links);
+        installDragHandler();
+        installInfoBoxCloseHandler();
+        initSimulation(d, simulation, width, height, links, nodes);
+        zoom.scaleTo(canvas, minScale);
+        // Center the graph after a sec.
+        setTimeout(function () {
+          const key = getQueryVariable("k");
+          const data = d.nodes.find(function (d) { return (d.name === key); });
+          if (key === undefined || data === undefined) {
+            const graphScale = d3.zoomTransform(g.node()).k;
+            const y = height / 2 / graphScale;
+            zoom.translateTo(canvas, 0, y);
+          } else {
+            setTimeout(function () {
+              showState(data, nodes, links, zoom, canvas, width, height);
+            }, 1000);
+          }
+        }, 500);
+      });
     });
 }
 
@@ -407,7 +490,6 @@ function loadExecs() {
       setNumExecs(txt);
     })
 }
-
 
 loadJson();
 loadExecs();

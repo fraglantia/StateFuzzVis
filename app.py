@@ -197,6 +197,50 @@ def cronjob():
     print('Processed records:', processed_records)
     sync_from_record()
 
+@app.route('/seed/<fname>')
+def seedView(fname):
+    full_path = os.path.join(SEED_FOLDER, fname)
+    if os.path.exists(full_path):
+        with open(full_path, 'rb') as f:
+            binfile = f.read().decode('ascii', errors='replace')
+            template = """<!DOCTYPE html>
+                <html>
+                <head>
+                <title>Page Title</title>
+                </head>
+                <body>
+                <h3>{}</h3>
+                <pre>{}</pre>
+                </body>
+                </html>
+                """.format(fname, binfile)
+            return template
+        return "Not found"
+    return "Not found"
+
+@app.route('/stateSeq/<stateSeqStr>')
+def stateSeqView(stateSeqStr):
+    db_state_seq = get_state_seq_seed_db()
+    if stateSeqStr in db_state_seq :
+        htmlHeader = "{}".format(" -> ".join(stateSeqStr.split("$$$")))
+        htmlList = []
+        for url in db_state_seq[stateSeqStr]:
+            fname = url.split('/')[-1]
+            htmlList.append("<li><a href='/seed/{}'>{}</a></li>".format(fname, fname))
+        template = """<!DOCTYPE html>
+            <html>
+            <head>
+            <title>Page Title</title>
+            </head>
+            <body>
+            <h3>{}</h3>
+            <ul>{}</ul>
+            </body>
+            </html>
+            """.format(htmlHeader, '\n'.join(htmlList))
+        return template
+    return "Not found"
+
 @app.route('/<path:path>')
 def static_file(path):
     return app.send_static_file(path)
