@@ -26,7 +26,7 @@ function createDirectedEdges(canvas) {
   .attr('refX', 0)
   .attr('refY', 0)
   .attr('orient', 'auto')
-  .attr('markerWidth', 8)
+  .attr('markerWidth', 4)
   .attr('markerHeight', 10)
   .attr('xoverflow', 'visible')
   .append('svg:path')
@@ -67,7 +67,7 @@ function drawEdges(g, d) {
     .attr("source",d=> d.source.id)
     .attr("target",d=> d.target.id)
     .join("path")
-    .attr("stroke-width", 2)
+    .attr("stroke-width", 1)
     .attr('marker-end', 'url(#arrowhead)')
     .attr("fill", "none");
 }
@@ -285,8 +285,8 @@ function ticked(links, nodes, simulation) {
         y2 = y2 + 1;
       } else {
         // Cut x1 x2 to show arrowhead
-        x2 = x2 - ((25 + 15) * dx / dr); 
-        y2 = y2 - ((25 + 15) * dy / dr);
+        x2 = x2 - ((25 + 7) * dx / dr); 
+        y2 = y2 - ((25 + 7) * dy / dr);
       }
 
       return "M" + x1 + "," + y1 + "A" + drx + "," + dry + " " + xRotation + "," + largeArc + "," + sweep + " " + x2 + "," + y2;
@@ -301,12 +301,12 @@ function initSimulation(d, simulation, width, height, links, nodes) {
            d3.forceLink()
              .id(function (d) { return d.name; })
              .strength(function (link) {
-               return 0.2;
+               return 0.05;
              }))
-    .force("charge", d3.forceManyBody().strength(-2000).distanceMax(500))
+    .force("charge", d3.forceManyBody().strength(-2000).distanceMax(10000))
     .force(
       "manyBody",
-      d3.forceManyBody().distanceMin(100).distanceMax(200)
+      d3.forceManyBody().distanceMin(100).distanceMax(10000)
     )
     .on("tick", ticked(links, nodes, simulation));
 
