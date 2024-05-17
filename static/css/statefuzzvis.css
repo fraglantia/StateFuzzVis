@@ -125,7 +125,31 @@ body {
 .link {
   fill: none;
   stroke: var(--gray);
-  stroke-width: 2px;
+  stroke-width: 1px;
+  marker-end: url(#arrowhead);
+}
+
+.link-less-visible {
+  fill: none;
+  stroke: var(--gray);
+  stroke-width: 1px;
+  marker-end: url(#arrowhead);
+  opacity: 25%;
+}
+
+
+.link-found-out {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 1px;
+  marker-end: url(#arrowhead-green);
+}
+
+.link-found-in {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 1px;
+  marker-end: url(#arrowhead-orange);
 }
 
 .stats-body__filter {

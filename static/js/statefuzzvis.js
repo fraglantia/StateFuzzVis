@@ -1,7 +1,7 @@
 "use strict";
 
 // The minimum scale that we can set.
-const minScale = 0.2;
+const minScale = 0.8;
 var minHitCount = 1;
 var maxHitCount = 2;
 
@@ -20,19 +20,47 @@ function deleteCanvas(width, height) {
 }
 
 function createDirectedEdges(canvas) {
-  return canvas.append('defs').append('marker')
-  .attr('id', 'arrowhead')
-  .attr('viewBox', '-0 -5 10 10')
-  .attr('refX', 0)
-  .attr('refY', 0)
-  .attr('orient', 'auto')
-  .attr('markerWidth', 4)
-  .attr('markerHeight', 10)
-  .attr('xoverflow', 'visible')
-  .append('svg:path')
-  .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-  .attr('fill', '#999')
-  .style('stroke', 'none');
+  canvas.append('defs').append('marker')
+    .attr('id', 'arrowhead')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', 0)
+    .attr('refY', 0)
+    .attr('orient', 'auto')
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 10)
+    .attr('xoverflow', 'visible')
+    .append('svg:path')
+    .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+    .attr('fill', 'var(--gray)')
+    .style('stroke', 'none');
+  
+  canvas.append('defs').append('marker')
+    .attr('id', 'arrowhead-green')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', 0)
+    .attr('refY', 0)
+    .attr('orient', 'auto')
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 10)
+    .attr('xoverflow', 'visible')
+    .append('svg:path')
+    .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+    .attr('fill', 'var(--green)')
+    .style('stroke', 'none');
+  
+  canvas.append('defs').append('marker')
+    .attr('id', 'arrowhead-orange')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', 0)
+    .attr('refY', 0)
+    .attr('orient', 'auto')
+    .attr('markerWidth', 4)
+    .attr('markerHeight', 10)
+    .attr('xoverflow', 'visible')
+    .append('svg:path')
+    .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+    .attr('fill', 'var(--orange)')
+    .style('stroke', 'none');
 }
 
 function parseJSONData(arr) {
@@ -50,7 +78,6 @@ function parseJSONData(arr) {
   $.each(arr, function (_, obj) {
     if (obj.nextStates !== undefined) {
       $.each(obj.nextStates, function (_, ref) {
-        console.log(obj.name + " -> " + ref);
         data.links.push({ "source": obj.name, "target": ref });
       });
     }
@@ -64,12 +91,10 @@ function drawEdges(g, d) {
     .attr("stroke-opacity", 0.6)
     .selectAll("path")
     .data(d.links)
-    .attr("source",d=> d.source.id)
-    .attr("target",d=> d.target.id)
+    .attr("source", d => d.source.id)
+    .attr("target", d => d.target.id)
     .join("path")
-    .attr("stroke-width", 1)
-    .attr('marker-end', 'url(#arrowhead)')
-    .attr("fill", "none");
+    .attr("class", "link")
 }
 
 function appendStateInfo(list, node) {
@@ -111,11 +136,16 @@ function hideInfobox() {
 }
 
 function onClick(node) {
-  let list = clearContents().append("ul").classed("list-group", true);
-  appendStateInfo(list, node);
-  setTitle(node);
-  currentSelection = node.name;
-  showInfobox();
+  if (currentSelection !== node.name) {
+    let list = clearContents().append("ul").classed("list-group", true);
+    appendStateInfo(list, node);
+    setTitle(node);
+    currentSelection = node.name;
+    showInfobox();
+  } else {
+    currentSelection = undefined;
+    hideInfobox();
+  }
 }
 
 function drawNodes(g, d, simulation) {
@@ -195,29 +225,38 @@ function installZoomHandler(height, canvas, g, d) {
   return zoomHandler;
 }
 
-function clearSearchResults(nodes, resultList) {
+function clearSearchResults(nodes, links) {
   nodes.select(".node").classed("node-found", function (node) {
     return (currentSelection === node.name);
   });
-  resultList.html("");
+  links.attr("class", function (link) {
+    if (currentSelection === undefined) {
+      return "link";
+    }
+
+    if (currentSelection === link.source.name) {
+      return "link-found-out"; 
+    } else if (currentSelection === link.target.name) {
+      return "link-found-in"; 
+    }
+    return "link-less-visible";
+  });
 }
 
-function showState(node, nodes, zoom, canvas, width, height) {
-  const resultList = d3.select("#js-searchform-result");
+function showState(node, nodes, links, zoom, canvas, width, height) {
   const k = 2.0;
   const x = - node.x * k + width / 2;
   const y = - node.y * k + height / 2;
   onClick(node);
-  clearSearchResults(nodes, resultList);
+  clearSearchResults(nodes, links);
   canvas.transition().duration(750)
     .call(zoom.transform,
           d3.zoomIdentity.translate(x, y).scale(k));
 }
 
-function installClickHandler(nodes) {
-  const resultList = d3.select("#js-searchform-result");
+function installClickHandler(nodes, links) {
   $(document).on("click", "svg", function (evt) {
-    clearSearchResults(nodes, resultList);
+    clearSearchResults(nodes, links);
   });
 }
 
@@ -340,7 +379,7 @@ function loadJson() {
       const links = drawEdges(g, d);
       const nodes = drawNodes(g, d, simulation);
       const zoom = installZoomHandler(height, canvas, g, d);
-      installClickHandler(nodes);
+      installClickHandler(nodes, links);
       installDragHandler();
       installInfoBoxCloseHandler();
       initSimulation(d, simulation, width, height, links, nodes);
@@ -355,7 +394,7 @@ function loadJson() {
           zoom.translateTo(canvas, 0, y);
         } else {
           setTimeout(function () {
-            showState(data, nodes, zoom, canvas, width, height);
+            showState(data, nodes, links, zoom, canvas, width, height);
           }, 1000);
         }
       }, 500);
