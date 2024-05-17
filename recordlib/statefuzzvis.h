@@ -29,7 +29,6 @@ unsigned char * base64_encode(const unsigned char *src, size_t len,
 	unsigned char *out, *pos;
 	const unsigned char *end, *in;
 	size_t olen;
-	int line_len;
 
 	olen = len * 4 / 3 + 4; /* 3-byte blocks to 4-byte */
 	olen += olen / 72; /* line feeds */
@@ -43,18 +42,12 @@ unsigned char * base64_encode(const unsigned char *src, size_t len,
 	end = src + len;
 	in = src;
 	pos = out;
-	line_len = 0;
 	while (end - in >= 3) {
 		*pos++ = base64_table[in[0] >> 2];
 		*pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
 		*pos++ = base64_table[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
 		*pos++ = base64_table[in[2] & 0x3f];
 		in += 3;
-		line_len += 4;
-		if (line_len >= 72) {
-			*pos++ = '\n';
-			line_len = 0;
-		}
 	}
 
 	if (end - in) {
@@ -68,11 +61,7 @@ unsigned char * base64_encode(const unsigned char *src, size_t len,
 			*pos++ = base64_table[(in[1] & 0x0f) << 2];
 		}
 		*pos++ = '=';
-		line_len += 4;
 	}
-
-	if (line_len)
-		*pos++ = '\n';
 
 	*pos = '\0';
 	if (out_len)
@@ -80,14 +69,21 @@ unsigned char * base64_encode(const unsigned char *src, size_t len,
 	return out;
 }
 
-void write_statefuzzvis_record(char* fname, char** states, int state_count, char* seed_buf) {
+void write_statefuzzvis_record(char* fname, char** states, int state_count, char* seed_buf, int seed_buf_len) {
     // large enough buffer
     // Format
     // state1$$$state2$$$state3
     // YW5ueWVvbmdoYXNleW9taWNjaHk=
     size_t b64_len = 0;
     unsigned char * out = (unsigned char *) malloc(0x10000);
-    unsigned char * b64seed = base64_encode(seed_buf, strlen(seed_buf), &b64_len);
+	if (seed_buf_len > 0x4000) {
+		seed_buf_len = 0x4000;
+		seed_buf[0x4000-3] = '.';
+		seed_buf[0x4000-2] = '.';
+		seed_buf[0x4000-1] = '.';
+		seed_buf[0x4000] = '.';
+	}
+    unsigned char * b64seed = base64_encode(seed_buf, seed_buf_len, &b64_len);
     
     int ptr = 0;
     for (int i=0; i<state_count; i++) {
@@ -108,13 +104,13 @@ void write_statefuzzvis_record(char* fname, char** states, int state_count, char
     fclose(file);
 }
 
-void write_statefuzzvis_record_int(char* fname, int* states, int state_count, char* seed_buf) {
+void write_statefuzzvis_record_int(char* fname, int* states, int state_count, char* seed_buf, int seed_buf_len) {
     char** char_states = (char**) malloc(sizeof(char*) * state_count);
 	for (int i=0; i<state_count;i++) {
 		char_states[i] = (char*) malloc(16);
 		snprintf(char_states[i], 16, "%d", states[i]);
 	}
-	write_statefuzzvis_record(fname, char_states, state_count, seed_buf);
+	write_statefuzzvis_record(fname, char_states, state_count, seed_buf, seed_buf_len);
 }
 
 #endif
