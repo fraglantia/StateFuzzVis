@@ -102,6 +102,17 @@ function parseJSONDataStateSeqSeed() {
   });
 }
 
+function dedupStateSeqMap(arr) {
+  $.each(arr, function (_, obj) {
+    stateToStateSeqStrings[obj.name] = 
+      stateToStateSeqStrings[obj.name]
+        .sort((a, b) => a.length - b.length)
+        .reduce(function(a, b){ if (b != a[0]) a.unshift(b); return a }, [])
+        .reverse();
+
+  });
+}
+
 function drawEdges(g, d) {
   return g.append("g")
     .attr('stroke', '#666666')
@@ -447,8 +458,7 @@ function loadJson() {
       .then(function (_stateSeqJson) {
         stateSeqJson = _stateSeqJson;
         parseJSONDataStateSeqSeed();
-        console.log("loading done!");
-        
+        dedupStateSeqMap(json);
         const width = $("#js-canvas").width();
         const height = $("#js-canvas").height();
         deleteCanvas();
@@ -466,6 +476,7 @@ function loadJson() {
         installInfoBoxCloseHandler();
         initSimulation(d, simulation, width, height, links, nodes);
         zoom.scaleTo(canvas, minScale);
+        console.log("loading done!");
         // Center the graph after a sec.
         setTimeout(function () {
           const key = getQueryVariable("k");
