@@ -193,7 +193,7 @@ function setTitle(node) {
     d3.select("#js-infobox-title").text("Select a state");
   } else {
     d3.select("#js-infobox-title")
-      .text("[ Hello this is title for stats ] " + node.name);
+      .text("[ State ] " + node.name);
   }
 }
 
