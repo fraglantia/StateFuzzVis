@@ -206,11 +206,13 @@ def seedView(fname):
             template = """<!DOCTYPE html>
                 <html>
                 <head>
-                <title>Page Title</title>
+                <link rel="stylesheet" href="/css/bootstrap.min.css" />
                 </head>
                 <body>
+                <div class="container">
                 <h3>{}</h3>
                 <pre>{}</pre>
+                </div>
                 </body>
                 </html>
                 """.format(fname, binfile)
@@ -222,7 +224,7 @@ def seedView(fname):
 def stateSeqView(stateSeqStr):
     db_state_seq = get_state_seq_seed_db()
     if stateSeqStr in db_state_seq :
-        htmlHeader = "{}".format(" -> ".join(stateSeqStr.split("$$$")))
+        htmlHeader = "{}".format(" → ".join(stateSeqStr.split("$$$")))
         htmlList = []
         for url in db_state_seq[stateSeqStr]:
             fname = url.split('/')[-1]
@@ -230,11 +232,14 @@ def stateSeqView(stateSeqStr):
         template = """<!DOCTYPE html>
             <html>
             <head>
-            <title>Page Title</title>
+            <title>StateFuzzVis</title>
+            <link rel="stylesheet" href="/css/bootstrap.min.css" />
             </head>
             <body>
+            <div class="container">
             <h3>{}</h3>
             <ul>{}</ul>
+            </div>
             </body>
             </html>
             """.format(htmlHeader, '\n'.join(htmlList))

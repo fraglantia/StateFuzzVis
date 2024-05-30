@@ -102,6 +102,7 @@ void write_statefuzzvis_record(char* fname, char** states, int state_count, char
     if(!file) perror("Cannot open the file.\n");
     fwrite(out, 1, strlen(out), file);
     fclose(file);
+	free(out);
 }
 
 void write_statefuzzvis_record_int(char* fname, int* states, int state_count, char* seed_buf, int seed_buf_len) {
