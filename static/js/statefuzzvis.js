@@ -102,6 +102,10 @@ function parseJSONDataStateSeqSeed() {
   });
 }
 
+var heatmapFillColor = d3.scaleSequential()
+    .interpolator(d3.interpolateBlues)
+    .domain([1,100])
+
 function dedupStateSeqMap(arr) {
   $.each(arr, function (_, obj) {
     stateToStateSeqStrings[obj.name] = 
@@ -265,8 +269,8 @@ function drawNodes(g, d, simulation) {
     .attr("ry", 25)
     .attr("class", "node")
     .style("fill", function (d) {
-      const normalizedVal = 150 - Math.trunc(150 * ((d.hitCount - minHitCount) / (maxHitCount - minHitCount)));
-      return `rgb(${normalizedVal},${normalizedVal},${normalizedVal+100})`;
+      const normalizedVal = Math.trunc(100 * ((d.hitCount - minHitCount) / (maxHitCount - minHitCount)));
+      return heatmapFillColor(normalizedVal);
     })
     .on("click", onClick)
     .call(d3.drag()
